@@ -33,5 +33,5 @@ Optimizer:
   SGD (stochastic gradient descent with momentum)\
   AdaGrad\
   RMSprop\
-  Adam\
+  Adam
   
