@@ -16,7 +16,7 @@ Layer:
   Reshape\
   Activation
   
-Activation-functions:
+Activation-functions:  
   sigmoid\
   relu\
   leakyrelu\
@@ -24,7 +24,7 @@ Activation-functions:
   softmax\
   tanh
   
-Loss-functions:\
+Loss-functions:  
   squared-error\
   categorical_crossentropy\
   binary_crossentropy
