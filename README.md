@@ -7,14 +7,14 @@ With this API i can create Sequentual Models with different Layers, Activation-f
 For an explaination of the main functions read the guide.pdf.
 
 Layer:
-  Dense
-  Conv2D
-  Pooling
-  BatchNorm
-  Dropout  
-  Flatten
-  Reshape
-  Activation
+  Dense\
+  Conv2D\
+  Pooling\
+  BatchNorm\
+  Dropout\  
+  Flatten\
+  Reshape\
+  Activation\
   
 Activation-functions:
   sigmoid
