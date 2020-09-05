@@ -27,7 +27,7 @@ Activation-functions:
 Loss-functions:\
   squared-error\
   categorical_crossentropy\
-  binary_crossentropy\
+  binary_crossentropy
   
 Optimizer:\
   SGD (stochastic gradient descent with momentum)\
