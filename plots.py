@@ -30,7 +30,6 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
 
     if loads is not None:
         for lines in snaps:
-            print(lines[0], lines[1])
             ax1.plot(lines[0], lines[1], marker='x', linestyle='dashed', label='loss', color=snap_color)
 
     # plot accuracy

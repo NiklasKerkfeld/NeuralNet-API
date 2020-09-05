@@ -313,7 +313,6 @@ class Model:
         print(f'loss: {last_loss} accuracy: {last_acc}')
 
         # returns the history of loss and acc in the trainings-process
-        print(load_history)
         plot_trainingsprocess(loss_history, acc_history, loads=load_history, name=self.model_name, save=False)
         return loss_history, acc_history
 
@@ -536,9 +535,9 @@ if __name__ == '__main__':
     ]
 
     # create model
-    optimizer = SGD(lr=0.3)
-    nn = Model(model_name='model_28')
-    nn.compile(dense_architecture, loss='binary_crossentropy', optimizer=optimizer)
+    optimizer = Adam(lr=0.1)
+    nn = Model(model_name='model_01')
+    nn.compile(dense_architecture, loss='categorical_crossentropy', optimizer=optimizer)
     # nn.load('model_28', loss='squared_error', optimizer=optimizer)
 
     nn.summary()
