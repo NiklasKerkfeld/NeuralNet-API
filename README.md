@@ -24,12 +24,12 @@ Activation-functions:
   softmax\
   tanh
   
-Loss-functions:  
+Loss-functions:\
   squared-error\
   categorical_crossentropy\
   binary_crossentropy\
   
-Optimizer:
+Optimizer:\
   SGD (stochastic gradient descent with momentum)\
   AdaGrad\
   RMSprop\
