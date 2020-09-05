@@ -11,27 +11,27 @@ Layer:
   Conv2D\
   Pooling\
   BatchNorm\
-  Dropout\  
+  Dropout\
   Flatten\
   Reshape\
-  Activation\
+  Activation
   
 Activation-functions:
-  sigmoid
-  relu
-  leakyrelu
-  softplus
-  softmax
+  sigmoid\
+  relu\
+  leakyrelu\
+  softplus\
+  softmax\
   tanh
   
 Loss-functions:  
-  squared-error
-  categorical_crossentropy
-  binary_crossentropy
+  squared-error\
+  categorical_crossentropy\
+  binary_crossentropy\
   
 Optimizer:
-  SGD (stochastic gradient descent with momentum)
-  AdaGrad
-  RMSprop
-  Adam
+  SGD (stochastic gradient descent with momentum)\
+  AdaGrad\
+  RMSprop\
+  Adam\
   
