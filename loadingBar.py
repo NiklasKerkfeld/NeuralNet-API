@@ -4,6 +4,17 @@ from helperfunctions import prettyTime
 
 
 def print_loading_bar(actual, steps, epoch, total, starttime=0):
+    """
+    prints a loading bar
+    predicts a process duration if starttime is given
+    overwrites the current line
+    :param actual: the actual step of the process
+    :param steps: the count of all steps of the epoch
+    :param epoch: the actual epoch
+    :param total: the count of all epochs
+    :param starttime: time when the process have started
+    :return:
+    """
     if actual == 0:
         procent = 0
     else:
@@ -22,11 +33,7 @@ def print_loading_bar(actual, steps, epoch, total, starttime=0):
 
 
 if __name__ == '__main__':
-    for i in range(0, 101, 10):
-        print('\r>> You have finished %d%%' % i,)
-        sys.stdout.flush()
-        time.sleep(1)
-
-    for i in range(1000):
-        print_loading_bar(i, 1000, 1)
+    start = time.time()
+    for i in range(1, 1000):
+        print_loading_bar(i, 1000, 1, 5, starttime=start)
         time.sleep(.1)

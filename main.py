@@ -266,11 +266,11 @@ class Model:
         acc_history = []
         load_history = []
 
-        batch_count = len(x_train) // batchsize + 1
         last_loss, last_acc = 0, 0
 
         # start training
-        print(f'start training [epochs: {epochs}, batchsize: {batchsize}, shuffle: {shuffle}, policy: {policy}]')
+        b_size = str(batchsize) if isinstance(batchsize, int) else f'{min(batchsize)}-{max(batchsize)}'
+        print(f'start training [epochs: {epochs}, batchsize: {b_size}, shuffle: {shuffle}, policy: {policy}]')
         start_time = time.time()
         for e in range(1, epochs+1):                                                        # loop over epochs
             epoch_start_time = time.time()
@@ -279,11 +279,18 @@ class Model:
                 x_train, y_train = self._shuffle(self.x_train, self.y_train)
 
             batch_number = 1                                                                # number of the actual batch
-            for b in range(0, len(y_train), batchsize):                                     # in batch-steps
+            if isinstance(batchsize, list):
+                actual_batchsize = batchsize[e-1]
+                batch_count = len(x_train) // actual_batchsize + 1
+            else:
+                actual_batchsize = batchsize
+                batch_count = len(x_train) // batchsize + 1
+
+            for b in range(0, len(y_train), actual_batchsize):                                     # in batch-steps
                 print_loading_bar(batch_number, batch_count, e, epochs, epoch_start_time)   # print a loading bar
                 batch_number += 1                                                   # increases the number of the batch
 
-                self.train_on_batch(x_train[b:b+batchsize], y_train[b:b+batchsize])     # trains on batch
+                self.train_on_batch(x_train[b:b+actual_batchsize], y_train[b:b+actual_batchsize])     # trains on batch
 
             loss, acc = self.evaluate(self.x_test, self.y_test)                             # evaluate on test-data
             print(' ')
@@ -544,9 +551,10 @@ if __name__ == '__main__':
 
     # train model
     training = True
+    batch_sizes = [128, 128, 256, 256, 512]
     if training:
-        loss, acc = nn.train(x_train, y_train, batchsize=128, epochs=5, shuffle=True,
-                              x_test=x_test, y_test=y_test, policy='one')
+        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=5, shuffle=True,
+                              x_test=x_test, y_test=y_test, policy='acc')
 
         nn.save()
         # plot_trainingsprocess(loss, acc, name=nn.model_name, save=True)

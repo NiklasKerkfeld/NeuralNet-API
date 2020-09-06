@@ -5,7 +5,17 @@ import matplotlib.gridspec as gridspec
 
 
 def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
+    """
+    this function plots the trainings-process of the Model
+    :param loss: list of loss values
+    :param acc: list of acc values
+    :param loads: bool list when snapshot was loaded
+    :param name: name of the model (for the title)
+    :param save: saves the plot as pdf if Ture
+    :return: None
+    """
 
+    # define the size of the model
     plt.rcParams['figure.figsize'] = [12, 8]
     plt.rcParams['figure.dpi'] = 100  # 200 e.g. is really fine, but slower
     # define colors
@@ -14,8 +24,10 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
     snap_color = 'dimgray'
     major = 'black'
 
+    # arange the x-axis
     x = np.arange(1, len(acc) + 1, 1, dtype=np.int32)
 
+    # creating the line where the model get worse and a snapshot was loaded
     snaps = []
     actual = acc.copy()
     if loads is not None:
@@ -28,6 +40,7 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
 
     fig, ax1 = plt.subplots()
 
+    # plot the snapshot-lines
     if loads is not None:
         for lines in snaps:
             ax1.plot(lines[0], lines[1], marker='x', linestyle='dashed', label='loss', color=snap_color)
@@ -57,10 +70,10 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
     for i, j in zip(x, acc):
         ax1.annotate(str(np.round(j, 4)), xy=(i,j))
 
-    # make a legend
+    # make a legend and title
     plt.legend(handles=[line1, line2], loc="center left", fontsize=10)
-
     plt.title(f'trainings-process of {name}')
+
     # save the plot
     if save:
         plt.savefig(f'Plots/{name}.pdf')
@@ -71,15 +84,25 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
 
 
 def show_images(images, y_pred=None, y_true=None):
+    """
+    shows some images with prediction and labels
+    :param images: array of images
+    :param y_pred: array of predictions
+    :param y_true: array of labels
+    :return: None
+    """
     plt.figure(figsize=(10, 10))
     x = round(np.sqrt(len(images)))
 
+    # show the images
     for i in range(len(images)):
         plt.subplot(x, x, i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
         plt.imshow(images[i][0], cmap=plt.cm.binary)
+
+        # add prediction and label as label
         label = ''
         if y_pred is not None:
             label += f'prediction: {y_pred[i]}'
@@ -90,6 +113,14 @@ def show_images(images, y_pred=None, y_true=None):
 
 
 def showImagesWithProbabilities(images, probs, labels=None):
+    """
+    shows some images with a bar chart of there probabilities
+    true labels is shown red. If an other label is predicted it's shown red
+    :param images: array of the images
+    :param probs: array of the probabilities
+    :param labels: true label of the images
+    :return:
+    """
     fig = plt.figure(constrained_layout=True)
 
     gs0 = gridspec.GridSpec(1, 2, figure=fig)
@@ -98,12 +129,14 @@ def showImagesWithProbabilities(images, probs, labels=None):
     gs1 = gridspec.GridSpecFromSubplotSpec(4, 2, subplot_spec=gs0[0], wspace=0.1)
     idx = 0
     for n in range(8):
+        # show the images on the left side
         if n % 2 == 0:
             ax = fig.add_subplot(gs1[n])
             ax.set_xticks([])
             ax.set_yticks([])
             ax.grid(False)
             ax.imshow(images[idx, 0], cmap=plt.cm.binary)
+        # show the probabilities on the right side
         else:
             ax = fig.add_subplot(gs1[n])
             colors = ['tab:blue' for x in range(len(probs[idx]))]
