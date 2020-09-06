@@ -266,6 +266,7 @@ class Model:
         acc_history = []
         load_history = []
 
+        # init for policy
         last_loss, last_acc = 0, 0
 
         # start training
