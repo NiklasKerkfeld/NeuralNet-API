@@ -1,10 +1,10 @@
 # NeuralNetAPI
-A Numpy based API for creating and training of neural Networks
+A Numpy based API for creating and training of neural Networks.
 
 With this project i want get a deeper understanding how neural nets work. So i tried to programm my own API for creating and training neural nets.
 With this API i can create Sequentual Models with different Layers, Activation-functions, Loss-function and Optimizerns.
 
-For an explaination of the main functions read the guide.pdf (not online yet). For an Example how my API work look at example.ipynb
+For an explaination of the main functions read the guide.pdf (not online yet). For an Example how my API work look at example.ipynb.
 
 Layer:  
   Dense\
