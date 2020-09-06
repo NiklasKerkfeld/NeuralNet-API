@@ -234,7 +234,7 @@ class Model:
 
         return False
 
-    def train(self, x_train, y_train, epochs, batchsize=1, shuffle=False, x_test=None, y_test=None, policy=None,
+    def train(self, x_train, y_train, epochs, batchsize= 1, shuffle=False, x_test=None, y_test=None, policy=None,
               create_plot=False):
         """
         the trainingsprocess of the network
