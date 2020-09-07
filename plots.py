@@ -27,47 +27,52 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
     # arange the x-axis
     x = np.arange(1, len(acc) + 1, 1, dtype=np.int32)
 
-    # creating the line where the model get worse and a snapshot was loaded
-    snaps = []
-    actual = acc.copy()
-    if loads is not None:
-        for idx, load in enumerate(loads):
-            if load:
-                actual[idx] = acc[idx-1]
-                snaps.append([[x[idx-1], x[idx]], [actual[idx-1], acc[idx]]])
-            else:
-                actual[idx] = acc[idx]
-
+    # create a plot
     fig, ax1 = plt.subplots()
 
-    # plot the snapshot-lines
-    if loads is not None:
-        for lines in snaps:
-            ax1.plot(lines[0], lines[1], marker='x', linestyle='dashed', label='loss', color=snap_color)
+    # new subplot on the same x-axis
+    ax2 = ax1.twinx()
 
-    # plot accuracy
-    ax1.set_ylim(0, 1.01)
-    ax1.set_xlabel('epochs', color=major)
-    ax1.set_ylabel('accuracy', color=major)
-    ax1.tick_params(axis='y', labelcolor=major)
-    ax1.set_xticks(range(len(acc)), minor=True)
+    # handle the loads
+    if loads is not None:
+        actual_acc = []
+        actual_loss = []
+        last_acc = 0
+        last_loss = 0
+        for idx in range(len(acc)):
+            if not loads[idx]:
+                last_acc = acc[idx]
+                last_loss = loss[idx]
+                actual_acc.append(acc[idx])
+                actual_loss.append(loss[idx])
+            else:
+                actual_acc.append(last_acc)
+                actual_loss.append(last_loss)
+
+        # creating the line where the model get worse and a snapshot was loaded
+        for idx, load in enumerate(loads):
+            if load:
+                acc_line = [[x[idx-1], x[idx]], [actual_acc[idx-1], acc[idx]]]
+                loss_line = [[x[idx-1], x[idx]], [actual_loss[idx-1], loss[idx]]]
+                ax1.plot(acc_line[0], acc_line[1], marker='x', linestyle='dashed', label='acc', color=snap_color)
+                ax2.plot(loss_line[0], loss_line[1], marker='x', linestyle='dashed', label='loss', color=snap_color)
+    else:
+        actual_acc = acc
+        actual_loss = loss
 
     # for showing whole numbers on x-axis ('epochs')
     ax1.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
-    line1, = ax1.plot(x, actual, marker='x', linestyle='dashed', label='accuracy', color=acc_color)
-
-    # new subplot on the same x-axis
-    ax2 = ax1.twinx()
+    line1, = ax1.plot(x, actual_acc, marker='x', linestyle='dashed', label='accuracy', color=acc_color)
 
     # plot loss
     ax2.set_ylim(0, np.amax(loss)*1.1)
     ax2.set_ylabel('loss', color=major)
     ax2.tick_params(axis='y', labelcolor=major)
-    line2, = ax2.plot(x, loss, marker='x', linestyle='dashed', label='loss', color=loss_color)
+    line2, = ax2.plot(x, actual_loss, marker='x', linestyle='dashed', label='loss', color=loss_color)
 
     # print the values of accuracy on the plot
-    for i, j in zip(x, acc):
+    for i, j in zip(x, actual_acc):
         ax1.annotate(str(np.round(j, 4)), xy=(i,j))
 
     # make a legend and title
@@ -174,6 +179,13 @@ def showImagesWithProbabilities(images, probs, labels=None):
 
 
 if __name__ == '__main__':
+    acc = np.random.randint(0, 100, 10)
+    acc = acc / 100
+    loss = 1 - acc
+    loads = [False, True] * 5
+    plot_trainingsprocess(loss, acc, loads)
+
+    """
     from activationfunctions import Softmax_forward
     x_train = np.load('mnist/x_train.npy')
     y_train = np.load('mnist/y_train.npy')
@@ -184,3 +196,4 @@ if __name__ == '__main__':
 
     # show_images(x_train[:9], y_pred=pred, y_true=y_train)
 
+    """

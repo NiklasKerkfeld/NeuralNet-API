@@ -298,10 +298,6 @@ class Model:
             print(f'epoch {e}: loss: {loss} acc: {acc}')                                    # print result of evaluation
             print(' ')
 
-            # save a snapshot
-            for layer in self.architecture[:-1]:
-                layer.take_snapshot()
-
             # check policy and load the last snapshot if true
             if self._trainings_policy(policy, last_loss, loss, last_acc, acc):
                 load_history.append(True)
@@ -311,6 +307,9 @@ class Model:
             else:
                 load_history.append(False)
                 last_loss, last_acc = loss, acc
+                # save a snapshot
+                for layer in self.architecture[:-1]:
+                    layer.take_snapshot()
 
             # for statistics
             loss_history.append(loss)
@@ -552,10 +551,10 @@ if __name__ == '__main__':
 
     # train model
     training = True
-    batch_sizes = [128, 128, 256, 256, 512]
+    batch_sizes = [128, 128, 256, 256, 256, 256, 512, 512]
     if training:
-        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=5, shuffle=True,
-                              x_test=x_test, y_test=y_test, policy='acc')
+        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=8, shuffle=True,
+                              x_test=x_train, y_test=y_train, policy='one')
 
         nn.save()
         # plot_trainingsprocess(loss, acc, name=nn.model_name, save=True)
