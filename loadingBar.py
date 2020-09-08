@@ -25,9 +25,12 @@ def print_loading_bar(actual, steps, epoch, total, starttime=0):
 
     if starttime != 0:
         proc_time = time.time() - starttime
-        batch_time = proc_time / actual
-        need_time = (steps - actual) * batch_time
-        b += f'({prettyTime(need_time)})'
+        if actual == steps:
+            b += f'({prettyTime(proc_time)})'
+        else:
+            batch_time = proc_time / actual
+            need_time = (steps - actual) * batch_time
+            b += f'({prettyTime(need_time)})'
 
     sys.stdout.write('\r' + b)
 

@@ -513,36 +513,37 @@ if __name__ == '__main__':
         {"layer_type": "Dense", "neurons": 256, "use_bias": False},         # 1
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 2
         {"layer_type": "Activation", "activation": 'relu'},
-        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 128, "use_bias": False},         # 5
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 6
         {"layer_type": "Activation", "activation": 'relu'},
-        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 64, "use_bias": False},          # 9
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 10
         {"layer_type": "Activation", "activation": 'relu'},
-        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense",  "neurons": 64, "use_bias": False},         # 13
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 14
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 32, "use_bias": False},          # 17
         {"layer_type": "BatchNorm", 'alpha': 0.98},                         # 18
         {"layer_type": "Activation", "activation": 'relu'},
-        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 32, "use_bias": False},          # 21
         {"layer_type": "BatchNorm", 'alpha': 0.98},                         # 22
         {"layer_type": "Activation", "activation": 'relu'},
-        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
+        {"layer_type": "BatchNormGaussianNoise", 'standard_diviation': .4},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 10}      # , "activation": 'softmax'

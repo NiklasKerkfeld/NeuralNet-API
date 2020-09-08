@@ -7,6 +7,7 @@ from Layer.Dropout import Dropout
 from Layer.Reshape import Reshape
 from Layer.Flatten import Flatten
 from Layer.GaussianNoise import GaussianNoise
+from Layer.BatchNormGaussianNoise import BatchNormGaussianNoise
 
 
 def give_layer_dict():
@@ -20,6 +21,7 @@ def give_layer_dict():
         'activation': Activation,
         'batchnorm': BatchNormalization,
         'batchnormalization': BatchNormalization,
-        'gaussiannoise': GaussianNoise
+        'gaussiannoise': GaussianNoise,
+        'batchnormgaussiannoise': BatchNormGaussianNoise
     }
     return layer_dict

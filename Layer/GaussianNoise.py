@@ -34,10 +34,10 @@ class GaussianNoise:
         """
         init the Dense-Layer-class with params in a dictionary
         :param params: dict with prams for init
-        :return: cls-object                                             # I'm not sure what exactly it is
+        :return: cls-object                                             # I'm not sure what exactly this is
         """
         trainings_mode = True if not 'traingingsmode' in params.keys() else params['trainingsmode']
-        standard_diviation = True if not 'standard_diviation' in params.keys() else params['standard_diviation']
+        standard_diviation = .1 if not 'standard_diviation' in params.keys() else params['standard_diviation']
         return cls(params['input_shape'], standard_diviation, layer_before=layer_before,
                    trainings_mode=trainings_mode)
 
@@ -71,12 +71,14 @@ class GaussianNoise:
         :param input: input to the Layer
         :return: the output of the layer
         """
-        # make some the noise
-        self.Input = np.array(input)
-        self.Noise = np.random.normal(0, self.stadiv, input.shape)
+        if self.trainings_mode:
+            # make some the noise
+            self.Noise = np.random.normal(0, self.stadiv, input.shape)
 
-        # add the noise
-        self.Output = input + self.Noise
+            # add the noise
+            self.Output = input + self.Noise
+        else:
+            self.Output = input
 
         if self.next_layer is None or give_return:
             return self.Output
