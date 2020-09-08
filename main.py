@@ -281,7 +281,7 @@ class Model:
 
             batch_number = 1                                                                # number of the actual batch
             if isinstance(batchsize, list):
-                actual_batchsize = batchsize[e-1]
+                actual_batchsize = batchsize[e-1 if e < len(batchsize) else len(batchsize) - 1]
                 batch_count = len(x_train) // actual_batchsize + 1
             else:
                 actual_batchsize = batchsize
@@ -506,21 +506,26 @@ if __name__ == '__main__':
     ]
 
     dense_architecture = [
-        {"layer_type": "Flatten", 'input_shape': (1, 28, 28)},
+        {"layer_type": "GaussianNoise", 'input_shape': (1, 28, 28), 'standard_diviation': .1},
+        {"layer_type": "Dropout", "ratio": .2},
+        {"layer_type": "Flatten"},
 
-        {"layer_type": "Dense", "neurons": 128, "use_bias": False},         # 1
+        {"layer_type": "Dense", "neurons": 256, "use_bias": False},         # 1
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 2
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 128, "use_bias": False},         # 5
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 6
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 64, "use_bias": False},          # 9
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 10
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense",  "neurons": 64, "use_bias": False},         # 13
@@ -531,11 +536,13 @@ if __name__ == '__main__':
         {"layer_type": "Dense", "neurons": 32, "use_bias": False},          # 17
         {"layer_type": "BatchNorm", 'alpha': 0.98},                         # 18
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 32, "use_bias": False},          # 21
         {"layer_type": "BatchNorm", 'alpha': 0.98},                         # 22
         {"layer_type": "Activation", "activation": 'relu'},
+        {"layer_type": "GaussianNoise", 'standard_diviation': .1},
         {"layer_type": "Dropout", "ratio": .2},
 
         {"layer_type": "Dense", "neurons": 10}      # , "activation": 'softmax'
@@ -551,10 +558,11 @@ if __name__ == '__main__':
 
     # train model
     training = True
-    batch_sizes = [128, 128, 256, 256, 256, 256, 512, 512]
+    batch_sizes = [128, 256, 256, 512]
+    print(len(batch_sizes))
     if training:
-        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=8, shuffle=True,
-                              x_test=x_train, y_test=y_train, policy='one')
+        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=5, shuffle=True,
+                              x_test=x_train, y_test=y_train, policy='loss')
 
         nn.save()
         # plot_trainingsprocess(loss, acc, name=nn.model_name, save=True)
@@ -563,8 +571,8 @@ if __name__ == '__main__':
 
     pred, prob = nn.predict(x_test, return_probability=True)
     y_pred = one_hot(pred, 10)
-    acc = CrossEntropy_Accuracy(y_pred, y_test)
-    print(f'prediction accuracy: {acc}')
+    loss, acc = nn.evaluate(x_test, y_test)
+    print(f'prediction loss: {loss}, accuracy: {acc}')
 
     y_test = y_test.argmax(axis=1)
     nr = np.random.randint(0, 10000-25)

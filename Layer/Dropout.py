@@ -1,6 +1,4 @@
 import numpy as np
-from activationfunctions import *
-from lossfunctions import *
 from helperfunctions import *
 
 
