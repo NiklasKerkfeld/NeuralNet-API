@@ -14,6 +14,7 @@ Layer:
     Dropout\
     Flatten\
     Reshape\
+    GaussianNoise\
     Activation
   
 Activation-functions:  
