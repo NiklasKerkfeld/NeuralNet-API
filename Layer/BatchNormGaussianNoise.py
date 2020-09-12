@@ -3,10 +3,11 @@ from typing import Union
 from helperfunctions import *
 
 
-class GaussianNoise:
-    def __init__(self, input_shape: tuple, standard_diviation: float = .1, layer_before: Union[None, object] = None,
+class BatchNormGaussianNoise:
+    def __init__(self, input_shape: np.ndarray, scale: float = .1, layer_before: Union[None, object] = None,
                  next_layer: Union[None, object] = None, trainings_mode: bool = True):
         """
+        This layer noises with a noise orientated on the variance of the batch
         Adds a zero-centere Gaussian Noise to the input
         :param input_shape: shape of the input
         :param optimizer: just for standardization
@@ -14,49 +15,45 @@ class GaussianNoise:
         :param next_layer: next layer
         :param trainings_mode: No noise if False
         """
-        # init-params
+        # define init params
         self.input_shape = input_shape
         self.output_shape = input_shape
-        self.stadiv = standard_diviation
+        self.scale = scale
 
-        self.Output = np.zeros(input_shape)        # saves the last output of the neurons
-        self.Input = np.zeros(input_shape)         # save the last input to the layer
-        self.Noise = np.zeros(input_shape)         # last output without the activation-function
+        self.Output = None                                              # saves the last output of the neurons
+        self.Input = None                                               # save the last input to the layer
+        self.Noise = None                                               # last output without the activation-function
 
-        # modes
-        self.trainings_mode = trainings_mode        # trainings-mode has no effect on this layer
-        self.first_mode = False                     # if True backward-function does not return
+        # trainings- and first-mode
+        self.trainings_mode = trainings_mode                            # trainings-mode has no effect on this layer
+        self.first_mode = False                                         # if True backward-function does not return
 
-        # links to next layer and layer before
+        # links to the next layer and the layer before
         self.layer_before = layer_before
         self.next_layer = next_layer
+
+        # snapshots of trainable prams
+        self.snapshot = []
 
     @classmethod
     def from_dict(cls, params, optimizer, layer_before=None):
         """
-        init the Layer from a dict
+        init the Layer with params from a dictionary
         :param params: dict with prams for init
-        :param optimizer: just for standardization
-        :return: instance of the layer
+        :return: cls-object                                             # I'm not sure what exactly it is
         """
         trainings_mode = True if not 'traingingsmode' in params.keys() else params['trainingsmode']
-        standard_diviation = .1 if not 'standard_diviation' in params.keys() else params['standard_diviation']
-        return cls(params['input_shape'], standard_diviation, layer_before=layer_before,
+        scale = .1 if not 'scale' in params.keys() else params['scale']
+        return cls(params['input_shape'], scale, layer_before=layer_before,
                    trainings_mode=trainings_mode)
 
     @classmethod
     def from_load(cls, load, optimizer, layer_before):
-        """
-        init the Layer with the params form a save-file
-        :param params: List with prams for init
-        :param optimizer: just for standardization
-        :return: instance of the layer
-        """
-        input_shape, standard_diviation = load
-        return cls(retuple(input_shape), float(standard_diviation), layer_before=layer_before)
+        input_shape, scale = load
+        return cls(retuple(input_shape), float(scale), layer_before=layer_before)
 
     def save(self):
-        hyperparameter = ['GaussianNoise', seperate_tuple(self.input_shape), self.stadiv]
+        hyperparameter = ['GaussianNoise', seperate_tuple(self.input_shape), self.scale]
         params = [np.array([]), np.array([]), np.array([]), np.array([])]
         return hyperparameter, params
 
@@ -84,14 +81,18 @@ class GaussianNoise:
     def forward(self, input: np.ndarray, target: Union[None, np.ndarray] = None, give_return: bool = False):
         """
         forward_propagation [activation(input * weights + bias)]
-        :param input: input-tensor to the Layer
-        :param target: target(s) of the batch
-        :param give_return: returns Output if True
-        :return:
+        :param input: input to the Layer
+        :param target: target of the forward propagation
+        :param give_return: returns output if True
+        :return: the output of the layer
         """
         if self.trainings_mode:
             # make some the noise
-            self.Noise = np.random.normal(0, self.stadiv, input.shape)
+            mean = np.mean(input, axis=0)
+            var = np.mean((input - mean) ** 2, axis=0)
+            stadiv = np.sqrt(var)
+
+            self.Noise = np.random.normal(0, self.scale, input.shape) * stadiv
 
             # add the noise
             self.Output = input + self.Noise
@@ -108,7 +109,6 @@ class GaussianNoise:
         Backpropagation
         just returns the error form layer before
         :param error: delta from next layer
-        :param return_input_error: returns error of the network input if True
         :return: delta for layer before
         """
         if self.first_mode:
@@ -129,7 +129,7 @@ class GaussianNoise:
         """
         pass
 
-    def load_snapshot(self, nr=-1):
+    def load_snapshot(self, nr: int = -1):
         """
         no params to load
         :param nr:
@@ -152,15 +152,29 @@ if __name__ == '__main__':
     import tensorflow.keras as keras
     from plots import *
     from Layer.Dropout import Dropout
+    from Layer.GaussianNoise import GaussianNoise
+    from activationfunctions import Relu_forward
     (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data(path='mnist.npz')
 
     x_test = x_test / 255
     x_test = x_test.reshape(len(x_test), 1, 28, 28)
     print(x_test.shape[1:])
 
-    NoiseLayer = GaussianNoise(x_test.shape[1:], .1)
+    NoiseLayer = GaussianNoise(x_test.shape[1:], .2)
+    BatchNormGaussianNoiseLayer = BatchNormGaussianNoise(x_test.shape[1:], .5)
     DropoutLayer = Dropout(x_test.shape[1:], dropout=.2)
+
+    # show_images(x_test[:16])
 
     out = NoiseLayer.forward(x_test, give_return=True)
     out = DropoutLayer.forward(out, give_return=True)
+    show_images(out[:16])
+
+    out = BatchNormGaussianNoiseLayer.forward(x_test, give_return=True)
+    out = Relu_forward(out)
+    out /= np.amax(out)
+    print(np.amin(out), np.amax(out))
+
+    print(x_test[0, 0, 0])
+    print(out[0, 0, 0])
     show_images(out[:16])

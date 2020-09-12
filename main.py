@@ -1,9 +1,10 @@
 import csv
 from tabulate import tabulate
+from typing import Union, List, Dict
+
 from layer import give_layer_dict
 from Layer.Last_Layer import Last_Layer
 from helperfunctions import *
-from lossfunctions import *
 from optimizer import *
 from plots import *
 from loadingBar import *
@@ -13,10 +14,10 @@ class Model:
     """
     the main class for a neural net
     """
-    def __init__(self, model_name=None):
+    def __init__(self, model_name: str = None):
         """
         create the network architecture
-        :param architecture: list (of dicts of specifications)
+        :param model_name: name of the model
         """
         # for the layer of the model
         self.architecture = []
@@ -27,7 +28,7 @@ class Model:
         else:
             self.model_name = model_name
 
-    def compile(self, architecture, loss, optimizer):
+    def compile(self, architecture: List[dict], loss: str, optimizer: Union[object, str]):
         """
         compiles the model for training
         :param architecture: the architecture of the model
@@ -35,7 +36,6 @@ class Model:
         :param optimizer: the optimizer to optimize the trainable params
         :return: None
         """
-
         # optimizer
         # if the optimizer is given as class
         if not isinstance(optimizer, str):
@@ -50,7 +50,7 @@ class Model:
 
         # as architecture we create a link-List where every layer is connected to the next layer and the layer before
         # so in propagation every layer starts the forward propagation of the next layer
-        # the so called 'Loss_Layer' is the last part of this Link-List it calculates the Error and starts the backprob
+        # the so called 'Loss_Layer' is the last part of this Link-List it calculates the Error and starts the backprop
         # this goes then back from layer to layer
 
         self.architecture = []
@@ -113,7 +113,7 @@ class Model:
         # saving the weights and biases as a npz-file in the Model folder
         np.savez(f'Models/{self.model_name}.npz', *weights_bias)
 
-    def load(self, model_name, loss, optimizer):
+    def load(self, model_name: str, loss: str, optimizer: Union[object, str]):
         """
         load model hyperparameter and inits a network then load the weights and biases
         :param model_name: name of the two save files
@@ -168,16 +168,23 @@ class Model:
             self.architecture.append(self.Loss_Layer)
             self.First_Layer = self.architecture[0]
 
-    def train_on_batch(self, input, target):
+    def train_on_batch(self, input: np.ndarray, target: np.ndarray, return_error: bool = False):
         """
         start forward and backward propagation
         :param input: a batch of training-data
         :param target: the target of this batch
         :return: None
         """
+        if return_error:
+            self.Loss_Layer.set_give_input_error(True)
+
         self.First_Layer.forward(input, target)
 
-    def _trainings_policy(self, policy, last_loss, loss, last_acc, acc):
+        if return_error:
+            error = self.Loss_Layer.input_error
+            return error
+
+    def _trainings_policy(self, policy: Union[str, None], last_loss: float, loss: float, last_acc: float, acc: float):
         """
         checks the trainings-policy
         returns true if the model has to load a snapshot according to the policy
@@ -234,8 +241,9 @@ class Model:
 
         return False
 
-    def train(self, x_train, y_train, epochs, batchsize= 1, shuffle=False, x_test=None, y_test=None, policy=None,
-              create_plot=False):
+    def train(self, x_train: np.ndarray, y_train: np.ndarray, epochs: int, batchsize: Union[list, int] = 1,
+              shuffle: bool = False, x_test: np.ndarray = None, y_test: np.ndarray = None,
+              policy: Union[str, None] = None, create_plot=False):
         """
         the trainingsprocess of the network
         :param x_train: input trainings-data
@@ -319,11 +327,13 @@ class Model:
         print(f'training finished in {prettyTime(time.time() - start_time)}.')
         print(f'loss: {last_loss} accuracy: {last_acc}')
 
+        if create_plot:
+            plot_trainingsprocess(loss_history, acc_history, loads=load_history, name=self.model_name, save=False)
+
         # returns the history of loss and acc in the trainings-process
-        plot_trainingsprocess(loss_history, acc_history, loads=load_history, name=self.model_name, save=False)
         return loss_history, acc_history
 
-    def _shuffle(self, X, Y):
+    def _shuffle(self, X: np.ndarray, Y: np.ndarray):
         """
         shuffles the data
         :param X: input-data
@@ -339,7 +349,7 @@ class Model:
 
         return shuffled_x, shuffled_y
 
-    def predict(self, input, return_probability=False):
+    def predict(self, input: np.ndarray, return_probability: bool = False):
         """
         predicts the input-data
         :param input: Data to predict
@@ -373,7 +383,7 @@ class Model:
         else:
             return prob.argmax(axis=1)
 
-    def evaluate(self, input, target):
+    def evaluate(self, input: np.ndarray, target: np.ndarray):
         """
         evaluates the quality of the net in accuracy and loss
         :param input: input-data for the network
@@ -559,11 +569,11 @@ if __name__ == '__main__':
 
     # train model
     training = True
-    batch_sizes = [128, 256, 256, 512]
+    batch_sizes = [128, 128, 256, 256, 256, 256, 256, 256, 512, 512]
     print(len(batch_sizes))
     if training:
-        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=5, shuffle=True,
-                              x_test=x_train, y_test=y_train, policy='loss')
+        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=2, shuffle=True,
+                              x_test=x_train, y_test=y_train, policy='loss', create_plot=True)
 
         nn.save()
         # plot_trainingsprocess(loss, acc, name=nn.model_name, save=True)
@@ -577,7 +587,7 @@ if __name__ == '__main__':
 
     y_test = y_test.argmax(axis=1)
     nr = np.random.randint(0, 10000-25)
-    showImagesWithProbabilities(x_test[nr:nr+16], prob[nr:nr+16], y_test[nr:nr+16])
+    # showImagesWithProbabilities(x_test[nr:nr+16], prob[nr:nr+16], y_test[nr:nr+16])
 
-    show_images(x_test[nr:nr+25], y_pred=pred[nr:nr+25], y_true=y_test[nr:nr+25])
+    # show_images(x_test[nr:nr+25], y_pred=pred[nr:nr+25], y_true=y_test[nr:nr+25])
 

@@ -2,9 +2,10 @@ import numpy as np
 
 
 class AdaGrad:
-    def __init__(self, lr=.1, epsilon=10**-7, initial_accumulator_value=0.1, weight_decay=1):
+    def __init__(self, lr: float = .1, epsilon: float = 10**-7, initial_accumulator_value: float = 0.1,
+                 weight_decay: float = 1.0):
         """
-                adaptive gradient algorithm
+        adaptive gradient algorithm
         updates lr for every weight an bias individually
         outer_class to save the params
         inner_class used in the Layer to update trainable params
@@ -22,17 +23,17 @@ class AdaGrad:
         """
         the inner_class to update the trainable params
         """
-        def __init__(self, outer_class, shape):
+        def __init__(self, outer_class, shape: tuple):
             self.lr = outer_class.lr                        # init learning rate
             self.epsilon = outer_class.epsilon              # with epsilon 1 the used lr starts at self.lr
             self.alpha = np.full(shape, outer_class.initial_accumulator_value)                               # saves squared change of every param
             self.weight_decay = outer_class.weight_decay
 
-        def update_params(self, weights, delta):
+        def update_params(self, weights: np.ndarray, delta: np.ndarray):
             """
             updates params
+            :param weights: weights to update
             :param delta: delta from backpropagation
-            :param batch_size: size of the mini-batch
             :return: value to subtract from params
             """
             # alpha increases every update of the params so the lr decreases

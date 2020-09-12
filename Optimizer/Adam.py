@@ -2,7 +2,16 @@ import numpy as np
 
 
 class Adam:
-    def __init__(self, lr=0.001, beta_1=.9, beta_2=.999, epsilon=10**-7, weight_decay=1):
+    def __init__(self, lr: float = 0.001, beta_1: float = .9, beta_2: float = .999, epsilon: float = 10**-7,
+                 weight_decay: float = 1.0):
+        """
+         Adaptive Moment Estimation
+        :param lr: learning-rate
+        :param beta_1: beta for exponential weighted avarage of delta
+        :param beta_2: beta for exponential weighted avarage of delta squared
+        :param epsilon: small number for avoiding dividing by zero
+        :param weight_decay: dacay of weights every time it's updated
+        """
         self.lr = lr
         self.beta_1 = beta_1
         self.beta_2 = beta_2

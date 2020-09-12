@@ -7,7 +7,6 @@ def give_activation_dict():
         'relu': (Relu_forward, Relu_backward),
         'leakyrelu': (Leakyrelu_forward, LeakyRelu_backward),
         'softplus': (Softmax_forward, Softmax_backward),
-        'binarystep': (BinaryStep_forward, BinaryStep_backward),
         'softmax': (Softmax_forward, Softmax_backward),
         'tanh': (Tanh_forward, Tanh_backward)
     }
@@ -115,30 +114,6 @@ softplus_derivate = np.vectorize(softplus_derivate, otypes=['float64'])
 
 def Softplus_backward(x, error):
     return softplus_derivate(x) * error
-
-
-#####################################################################################################################
-#    BinaryStep -- BinaryStep -- BinaryStep -- BinaryStep -- BinaryStep -- BinaryStep -- BinaryStep -- BinaryStep   #
-#####################################################################################################################
-
-
-def binaryStep(x):
-    return 1 if x >= 0 else 0
-
-
-BinaryStep_forward = np.vectorize(binaryStep, otypes=['float64'])
-
-
-def binaryStep_derivate(x):
-    return 0
-
-
-binaryStep_derivate = np.vectorize(binaryStep_derivate, otypes=['float64'])
-
-
-def BinaryStep_backward(x, error):
-    # at this positon the error becomes 0 and the backprop will not work anymore
-    return binaryStep_derivate(x) * error
 
 
 #####################################################################################################################

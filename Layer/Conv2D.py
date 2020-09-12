@@ -1,11 +1,14 @@
 import numpy as np
+from typing import Union, Tuple
 from activationfunctions import *
 from helperfunctions import *
 
 
 class Conv2D:
-    def __init__(self, input_shape, neurons, filter_size, optimizer, activation=None, stride=1, padding='valid',
-                 use_bias=True, layer_before=None, next_layer=None, trainings_mode=True):
+    def __init__(self, input_shape: tuple, neurons: int, filter_size: Union[int, Tuple[int]], optimizer: object,
+                 activation: Union[None, str] = None, stride: Union[int, Tuple[int]] = 1, padding: str ='valid',
+                 use_bias: bool = True, layer_before: Union[None, object] = None,
+                 next_layer: Union[None, object] = None, trainings_mode: bool = True):
         """
         Convolutional Layer
         :param input_shape: shape of the input (3d)
@@ -52,18 +55,17 @@ class Conv2D:
             pad_height = self.stride_height * self.out_height + self.filter_width - 1
             w_add, h_add = (pad_width - self.out_width), (pad_height - self.out_height)
             self.pad_w_add, self.pad_h_add = (int(w_add / 2), w_add - int(w_add / 2)), (int(h_add / 2), h_add - int(h_add / 2))
-            print(pad_width, pad_height)
-            print(self.pad_w_add, self.pad_h_add)
-
         else:
             raise AttributeError(f"\'{padding}\' is an invalid Attribute for padding. Must be \'valid\' or \'same\'.")
 
+        # define output-shape
         self.output_shape = self.neurons, self.out_width, self.out_height
 
         # init weights and bias
         self.filter = np.random.randn(self.neurons, self.dims, self.filter_width, self.filter_height)
         self.bias = np.random.randn(self.neurons)
 
+        # saves delta of filter and bias for the update function
         self.filter_change = np.zeros_like(self.filter)
         self.bias_change = np.zeros_like(self.bias)
 
@@ -93,7 +95,7 @@ class Conv2D:
     @classmethod
     def from_dict(cls, params, optimizer, layer_before=None):
         """
-
+        init the layer form a dict
         :param params: dictionary with all params
         :param optimizer: optimizer for update the trainable params
         :return: class
@@ -109,20 +111,39 @@ class Conv2D:
 
     @classmethod
     def from_load(cls, load, optimizer, layer_before=None):
+        """
+        init the layer from a load
+        :param load: list for hyperparams
+        :param optimizer: optimizer for trainable params
+        :param layer_before: link to layer before
+        :return:
+        """
         input_shape, neurons, filter_size, activation, stride, padding, use_bias = load
+        activation = activation if activation is not '' else None
+        use_bias = True if use_bias == 'True' else False
         return cls(retuple(input_shape), int(neurons), retuple(filter_size), optimizer=optimizer, activation=activation,
                    stride=retuple(stride), padding=padding, use_bias=use_bias, layer_before=layer_before)
 
+    def save(self):
+        hyperparameter = ['Conv2D', seperate_tuple(self.input_shape), self.neurons,
+                          seperate_tuple(self.filter_size), self.activation_name, seperate_tuple(self.stride),
+                          self.padding, self.use_bias]
+        params = [self.filter, self.bias, np.array([]), np.array([])]
+        return hyperparameter, params
+
     def set_weights_biases(self, params):
         """
-        just load some values for filter and bias
-        :param params:
+        load some values for filter and bias
+        :param params: list [filter, bias]
         :return:
         """
         self.filter = params[0]             # set filter-params and
         self.bias = params[1]               # biases to the loaded values
 
-    def set_trainingsmode(self, mode=True):
+    def set_firstmode(self, mode: bool = False):
+        self.first_mode = mode
+
+    def set_trainingsmode(self, mode: bool = True):
         self.trainings_mode = mode
 
     def set_next_layer(self, next_layer=None):
@@ -131,16 +152,20 @@ class Conv2D:
     def set_layer_before(self, layer_before=None):
         self.layer_before = layer_before
 
-    def forward(self, input, target=None, give_return=False):
+    def forward(self, input: np.ndarray, target: Union[None, np.ndarray] = None, give_return: bool = False):
         """
         forward-propagation
         :param input: Input from data or layer before (3d)
+        :param target: target of the input
+        :param give_return: returns output if True
         :return: output of the layer (3d)
         """
+        # init arrays for input, Z an Output
         self.Input = input
         self.Z = np.zeros((self.Input.shape[0], ) + self.output_shape)
         self.Output = np.zeros((self.Input.shape[0], ) + self.output_shape)
 
+        # if padding is same add a pad of zeros around the input to get a output as big as the input
         if self.padding == 'same':
             self.pad = np.pad(input, ((0, 0), (0, 0), self.pad_w_add, self.pad_h_add), mode='constant', constant_values=0.0)
         else:
@@ -148,27 +173,31 @@ class Conv2D:
 
         b, d, w, h = self.pad.shape
 
+        # concolutes over the width and height with the filter
         for x in range(0, (w + 1 - self.filter_width), self.stride_width):
             for y in range(0, (h + 1 - self.filter_height), self.stride_height):
-                # print(x, y)
                 self.Z[:, :, int(x / self.stride_width), int(y / self.stride_height)] = \
                     np.tensordot(self.pad[:, :, x:x+self.filter_width, y:y+self.filter_height],
                                  self.filter, axes=([1, 2, 3], [1, 2, 3]))
 
+        # add bias if bias is used
         if self.use_bias:
             self.Z += self.bias[None, :, None, None]
 
+        # use a activation function if given
         if self.activation_name is not None:
             self.Output = self.function(self.Z)
         else:
             self.Output = self.Z
 
+        # return if next-layer is None of give return is True
         if self.next_layer is None or give_return:
             return self.Output
         else:
+            # else start forward prop of next layer
             self.next_layer.forward(self.Output, target=target)
 
-    def backward(self, error):
+    def backward(self, error: np.ndarray, return_input_error: bool = False):
         """
         backpropagation for layer
         :param error: Error from the Layer after
@@ -197,8 +226,6 @@ class Conv2D:
 
         for x in range(self.filter_width):
             for y in range(self.filter_height):
-                #                          b  d
-                input_selection = self.pad[:, :, x:x+d_width, y:y+d_height]
                 dw = np.tensordot(delta_pad, self.pad[:, :, x:x+d_width, y:y+d_height],
                                                 axes=([0, 2, 3], [0, 2, 3]))
                 self.filter_change[:, :, x, y] = dw
@@ -211,23 +238,23 @@ class Conv2D:
         if self.trainings_mode:
             self.update(error.shape[0])
 
-        # error of the input
+        # return None if first layer in network
         if self.first_mode:
             return None
 
+        # calculate error of input
         new_error = np.zeros_like(self.pad)
 
         weights = np.flip(self.filter, axis=[2, 3])
-        b, n, w, h = weights.shape
         _, _, weights_pad_w, weights_pad_h = weights.shape
 
         b, n, w, h = delta.shape
         delta_pad = np.zeros((b, n, w + (w - 1) * (self.stride_width - 1), h + (h - 1) * (self.stride_height - 1)),
                               dtype=delta.dtype)
         delta_pad[:, :, ::self.stride_width, ::self.stride_height] = delta
-        delta_pad = np.pad(delta_pad, ((0, 0), (0, 0), (weights_pad_w-1, weights_pad_w-1), (weights_pad_h-1, weights_pad_h-1)), mode='constant', constant_values=0.0)
+        delta_pad = np.pad(delta_pad, ((0, 0), (0, 0), (weights_pad_w-1, weights_pad_w-1),
+                                       (weights_pad_h-1, weights_pad_h-1)), mode='constant', constant_values=0.0)
 
-        # print(delta_pad[0,0])
         _, _, delta_pad_w, delta_pad_h = delta_pad.shape
         for x_out, x_in in enumerate(range(0, (delta_pad_w - weights_pad_w + 1))):
             for y_out, y_in in enumerate(range(0, (delta_pad_h - weights_pad_h + 1))):
@@ -241,9 +268,12 @@ class Conv2D:
         if self.layer_before is None:
             return new_error
         else:
-            self.layer_before.backward(new_error)
+            if return_input_error:
+                return self.layer_before.backward(new_error, return_input_error)
+            else:
+                self.layer_before.backward(new_error)
 
-    def update(self, batch_size):
+    def update(self, batch_size: int):
         """
         updates the weights of the filters and biases at the end of a batch
         uses the optimizer
@@ -256,18 +286,10 @@ class Conv2D:
         if self.use_bias:
             self.bias = self.bias_update.update_params(self.bias, self.bias_change / batch_size)           # update biases
 
-    def save(self):
-        # input_shape, neurons, filter_size, activation, optimizer, stride=1, padding='valid'
-        hyperparameter = ['Conv2D', seperate_tuple(self.input_shape), self.neurons,
-                          seperate_tuple(self.filter_size), self.activation_name, seperate_tuple(self.stride),
-                          self.padding, self.use_bias]
-        params = [self.filter, self.bias, np.array([]), np.array([])]
-        return hyperparameter, params
-
     def take_snapshot(self):
         self.snapshot.append([self.filter, self.bias])
 
-    def load_snapshot(self, nr=-1):
+    def load_snapshot(self, nr: int = -1):
         self.filter, self.bias = self.snapshot[nr]
 
     def info(self):

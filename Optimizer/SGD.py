@@ -2,13 +2,14 @@ import numpy as np
 
 
 class SGD:
-    def __init__(self, lr=.4, lr_decay=.9999, momentum=.9, weight_decay=1):
+    def __init__(self, lr: float = .4, lr_decay: float = .9999, momentum: float = .9, weight_decay: float = 1.0):
         """
         stochastic gradient decent
         outer_class to save params
         :param lr: learning-rate
-        :param lr_decay: declay for learning-rate every batch (lr *= decay)
+        :param lr_decay: decay for learning-rate every batch (lr *= decay)
         :param momentum: momentum of change
+        :param weight_decay: decay of weights every update
         """
 
         self.lr = lr
@@ -39,7 +40,6 @@ class SGD:
             """
             returns a change for subtract from the trainable param
             :param delta: delta for the trainable param from the backpropagation
-            :param batch_size: size of the mini-batch
             :return: change
             """
             # no momentum in the 1st update

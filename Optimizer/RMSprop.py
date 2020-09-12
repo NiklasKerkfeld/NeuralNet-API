@@ -2,7 +2,7 @@ import numpy as np
 
 
 class RMSprop:
-    def __init__(self, lr=.001, epsilon=10**-7, beta=.99, weight_decay=1):
+    def __init__(self, lr: float = .001, epsilon: float = 10**-7, beta: float = .99, weight_decay: float = 1.0):
         """
         adaptive gradient algorithm
         updates lr for every weight an bias individually
@@ -10,7 +10,8 @@ class RMSprop:
         inner_class used in the Layer to update trainable params
         :param lr: learning-rate (default: 1)
         :param epsilon: small number to avoid dividing zero (default: 1)
-        :param momentum: momentum must be between 0 and 1; 0 means no momentum (default: 0)
+        :param beta: beta for exponential weighted avarage of delta squared
+        :param: weight_decay: decay of the weights every update
         """
         self.lr = lr
         self.epsilon = epsilon
@@ -28,14 +29,13 @@ class RMSprop:
             self.Sd = np.zeros(shape)                               # saves squared change of every param
             self.step = 0
             self.weight_decay = outer_class.weight_decay
-            # self.change_history = []
 
-        def update_params(self, weights,  delta):
+        def update_params(self, weights: np.ndarray,  delta: np.ndarray):
             """
             updates params
+            :param weights: weights to update
             :param delta: delta from backpropagation
-            :param batch_size: size of the mini-batch
-            :return: value to subtract from params
+            :return: new weights
             """
             # exponential weighted average of Squared delta
             self.Sd = self.beta * self.Sd + (1 - self.beta) * (delta ** 2)

@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Default:
-    def __init__(self, lr=.4, lr_decay=.9999):
+    def __init__(self, lr=.2, lr_decay=.9999):
         """
         optimizer with no fancy shit at all
         :param lr: learning-rate (default: 0.2)

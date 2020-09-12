@@ -1,10 +1,12 @@
 import numpy as np
+from typing import Union
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.gridspec as gridspec
 
 
-def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
+def plot_trainingsprocess(loss: list, acc: list, loads: Union[list, None] = None, name: str = 'model',
+                          save: bool = False):
     """
     this function plots the trainings-process of the Model
     :param loss: list of loss values
@@ -30,6 +32,9 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
     # create a plot
     fig, ax1 = plt.subplots()
 
+    ax1.set_ylabel('accuracy', color=major)
+
+
     # new subplot on the same x-axis
     ax2 = ax1.twinx()
 
@@ -54,7 +59,7 @@ def plot_trainingsprocess(loss, acc, loads=None, name='model', save=False):
             if load:
                 acc_line = [[x[idx-1], x[idx]], [actual_acc[idx-1], acc[idx]]]
                 loss_line = [[x[idx-1], x[idx]], [actual_loss[idx-1], loss[idx]]]
-                ax1.plot(acc_line[0], acc_line[1], marker='x', linestyle='dashed', label='acc', color=snap_color)
+                ax1.plot(acc_line[0], acc_line[1], marker='x', linestyle='dashed', label='accuracy', color=snap_color)
                 ax2.plot(loss_line[0], loss_line[1], marker='x', linestyle='dashed', label='loss', color=snap_color)
     else:
         actual_acc = acc
