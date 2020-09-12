@@ -243,7 +243,7 @@ class Model:
 
     def train(self, x_train: np.ndarray, y_train: np.ndarray, epochs: int, batchsize: Union[list, int] = 1,
               shuffle: bool = False, x_test: np.ndarray = None, y_test: np.ndarray = None,
-              policy: Union[str, None] = None, create_plot=False):
+              policy: Union[str, None] = None, create_plot: bool = False):
         """
         the trainingsprocess of the network
         :param x_train: input trainings-data
@@ -576,7 +576,6 @@ if __name__ == '__main__':
                               x_test=x_train, y_test=y_train, policy='loss', create_plot=True)
 
         nn.save()
-        # plot_trainingsprocess(loss, acc, name=nn.model_name, save=True)
         print(loss)
         print(acc)
 
