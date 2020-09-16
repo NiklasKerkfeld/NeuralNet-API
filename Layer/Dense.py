@@ -183,7 +183,7 @@ class Dense:
             self.bias = self.bias_update.update_params(self.bias, self.change_bias / batch_size)     # update biases
 
     def take_snapshot(self):
-        self.snapshot.append([self.weights, self.bias])
+        self.snapshot.append([self.weights.copy(), self.bias.copy()])
 
     def load_snapshot(self, nr=-1):
         self.weights, self.bias = self.snapshot[nr]

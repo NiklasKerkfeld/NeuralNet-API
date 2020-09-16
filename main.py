@@ -517,8 +517,8 @@ if __name__ == '__main__':
 
     dense_architecture = [
         {"layer_type": "GaussianNoise", 'input_shape': (1, 28, 28), 'standard_diviation': .1},
-        {"layer_type": "Dropout", "ratio": .2},
-        {"layer_type": "Flatten"},
+        {"layer_type": "Dropout", 'input_shape': (1, 28, 28), "ratio": .2},
+        {"layer_type": "Flatten", 'input_shape': (1, 28, 28)},
 
         {"layer_type": "Dense", "neurons": 256, "use_bias": False},         # 1
         {"layer_type": "BatchNorm", 'alpha': 0.99},                         # 2
@@ -572,8 +572,8 @@ if __name__ == '__main__':
     batch_sizes = [128, 128, 256, 256, 256, 256, 256, 256, 512, 512]
     print(len(batch_sizes))
     if training:
-        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=2, shuffle=True,
-                              x_test=x_train, y_test=y_train, policy='loss', create_plot=True)
+        loss, acc = nn.train(x_train, y_train, batchsize=batch_sizes, epochs=10, shuffle=True,
+                              x_test=x_train, y_test=y_train, policy=None, create_plot=True)
 
         nn.save()
         print(loss)
@@ -581,12 +581,15 @@ if __name__ == '__main__':
 
     pred, prob = nn.predict(x_test, return_probability=True)
     y_pred = one_hot(pred, 10)
+
+    loss, acc = nn.evaluate(x_train, y_train)
+    print(f'loss: {loss}, acc: {acc} on train-data!')
+
     loss, acc = nn.evaluate(x_test, y_test)
-    print(f'prediction loss: {loss}, accuracy: {acc}')
+    print(f'loss: {loss}, acc: {acc} on test-data!')
 
     y_test = y_test.argmax(axis=1)
     nr = np.random.randint(0, 10000-25)
-    # showImagesWithProbabilities(x_test[nr:nr+16], prob[nr:nr+16], y_test[nr:nr+16])
+    showImagesWithProbabilities(x_test[nr:nr+16], prob[nr:nr+16], y_test[nr:nr+16])
 
-    # show_images(x_test[nr:nr+25], y_pred=pred[nr:nr+25], y_true=y_test[nr:nr+25])
-
+    show_images(x_test[nr:nr+25], y_pred=pred[nr:nr+25], y_true=y_test[nr:nr+25])

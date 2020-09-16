@@ -287,7 +287,7 @@ class Conv2D:
             self.bias = self.bias_update.update_params(self.bias, self.bias_change / batch_size)           # update biases
 
     def take_snapshot(self):
-        self.snapshot.append([self.filter, self.bias])
+        self.snapshot.append([self.filter.copy(), self.bias.copy()])
 
     def load_snapshot(self, nr: int = -1):
         self.filter, self.bias = self.snapshot[nr]

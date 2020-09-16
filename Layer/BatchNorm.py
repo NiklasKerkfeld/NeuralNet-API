@@ -5,7 +5,7 @@ from optimizer import *
 
 
 class BatchNormalization:
-    def __init__(self, input_shape: np.ndarray, optimizer: object, alpha: float = 0.98,
+    def __init__(self, input_shape: tuple, optimizer: object, alpha: float = 0.98,
                  layer_before: Union[None, object] = None, next_layer: Union[None, object] = None,
                  trainings_mode: bool = True):
         """
@@ -129,23 +129,16 @@ class BatchNormalization:
             # calculate mean and var of batch
             self.mean = np.mean(input, axis=0)
             self.var = np.mean((input - self.mean) ** 2, axis=0)
-
-            # calculation of x-hat for every value
-            self.x_hat = (self.Input - self.mean) / (np.sqrt(self.var + self.epsilon))
-
-            # scale and shift the value
-            self.Output = self.gamma * self.x_hat + self.beta
-
         else:
             # using moving mean and var with bias correction as mean and var
-            self.mean = self.moving_mean / (1 - self.alpha ** self.step)
-            self.var = self.moving_var / (1 - self.alpha ** self.step)
+            self.mean = self.moving_mean / (1 - (self.alpha ** self.step))
+            self.var = self.moving_var / (1 - (self.alpha ** self.step))
 
-            # calculation of x-hat for every value
-            self.x_hat = (self.Input - self.mean) / (np.sqrt(self.var + self.epsilon))
+        # calculation of x-hat for every value
+        self.x_hat = (self.Input - self.mean) / (np.sqrt(self.var + self.epsilon))
 
-            # scale and shift the value
-            self.Output = self.gamma * self.x_hat + self.beta
+        # scale and shift the value
+        self.Output = self.gamma * self.x_hat + self.beta
 
         # return Output if no next layer of give return is True
         if self.next_layer is None or give_return:
@@ -165,11 +158,9 @@ class BatchNormalization:
 
         # updating the moving mean and moving var with Bias Correction of Exponentially Weighted Averages
         if self.trainings_mode:
-            self.moving_mean = self.alpha * self.moving_mean
-            self.moving_mean += (1 - self.alpha) * self.mean
+            self.moving_mean = (self.alpha * self.moving_mean) + ((1 - self.alpha) * self.mean)
 
-            self.moving_var = (self.alpha * self.moving_var)
-            self.moving_var += (1 - self.alpha) * self.var
+            self.moving_var = (self.alpha * self.moving_var) + ((1 - self.alpha) * self.var)
 
             self.step += 1
 
@@ -234,7 +225,6 @@ class BatchNormalization:
         :param batch_size: size of the batch
         :return: None
         """
-        # print('BatchNormFail')
         # update the gamma-values
         self.gamma = self.gamma_update.update_params(self.gamma, self.delta_gamma / batch_size)
 
@@ -242,7 +232,8 @@ class BatchNormalization:
         self.beta = self.beta_update.update_params(self.beta, self.delta_beta / batch_size)
 
     def take_snapshot(self):
-        self.snapshot.append([self.gamma, self.beta, self.moving_mean, self.moving_var, self.step])
+        self.snapshot.append([self.gamma.copy(), self.beta.copy(), self.moving_mean.copy(), self.moving_var.copy(),
+                              self.step])
 
     def load_snapshot(self, nr=-1):
         self.gamma, self.beta, self.moving_mean, self.moving_var, self.step = self.snapshot[nr]
@@ -256,4 +247,3 @@ class BatchNormalization:
         neurons = 0                                                                 # count of neurons
 
         return 'BatchNormalization', self.input_shape, self.output_shape, neurons, trainable_params, '-'
-
