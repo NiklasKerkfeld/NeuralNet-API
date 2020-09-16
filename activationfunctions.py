@@ -18,23 +18,13 @@ def give_activation_dict():
 #####################################################################################################################
 
 
-def sigmoid(x):
-    if x <= -700:
-        return 0
-    elif x >= 700:
-        return 1
-    else:
-        return 1 / (1 + np.exp(-x))
-
-
-sigmoid_forward = np.vectorize(sigmoid, otypes=["float64"])
+def sigmoid_forward(x):
+    a = np.exp(-x)
+    return 1 / (1 + a)
 
 
 def sigmoid_derivate(x):
     return sigmoid_forward(x) * (1 - sigmoid_forward(x))
-
-
-sigmoid_derivate = np.vectorize(sigmoid_derivate, otypes=["float64"])
 
 
 def sigmoid_backward(x, error):
@@ -46,24 +36,12 @@ def sigmoid_backward(x, error):
 #####################################################################################################################
 
 
-def relu(x):
-    if x < 0:
-        return 0
-    else:
-        return x
-
-
-Relu_forward = np.vectorize(relu, otypes=["float64"])
+def Relu_forward(x):
+    return np.where(x < 0, 0, x)
 
 
 def relu_derivate(y):
-    if y < 0:
-        return 0
-    else:
-        return 1
-
-
-relu_derivate = np.vectorize(relu_derivate, otypes=["float64"])
+    return np.where(y < 0, 0, 1)
 
 
 def Relu_backward(y, error):
@@ -75,22 +53,16 @@ def Relu_backward(y, error):
 #####################################################################################################################
 
 
-def LeakyRelu(x):
-    return x if x >= 0 else 0.01 * x
-
-
-Leakyrelu_forward = np.vectorize(LeakyRelu, otypes=['float64'])
+def Leakyrelu_forward(x):
+    return np.where(x >= 0, x, 0.001 * x)
 
 
 def LeakyRelu_derivate(x):
-    return 1 if x >= 0 else 0.01
-
-
-leakyrelu_derivate = np.vectorize(LeakyRelu_derivate, otypes=['float64'])
+    return np.where(x >= 0, 1, 0.001)
 
 
 def LeakyRelu_backward(x, error):
-    return leakyrelu_derivate(x) * error
+    return LeakyRelu_derivate(x) * error
 
 
 #####################################################################################################################
@@ -98,18 +70,12 @@ def LeakyRelu_backward(x, error):
 #####################################################################################################################
 
 
-def Softplus(x):
+def softplus_forward(x):
     return np.log(1 + np.exp(x))
-
-
-softplus_forward = np.vectorize(Softplus, otypes=['float64'])
 
 
 def softplus_derivate(x):
     return 1 / (1 + np.exp(-x))
-
-
-softplus_derivate = np.vectorize(softplus_derivate, otypes=['float64'])
 
 
 def Softplus_backward(x, error):
@@ -144,25 +110,13 @@ def Softmax_backward(x, error):
 #####################################################################################################################
 
 
-def tanh(x):
+def Tanh_forward(x):
     return np.tanh(x)
 
 
-Tanh_forward = np.vectorize(tanh, otypes=['float64'])
-
-
 def tanh_derivate(x):
-    return 1 - tanh(x) ** 2
-
-
-tanh_derivate = np.vectorize(tanh_derivate, otypes=['float64'])
+    return 1 - Tanh_forward(x) ** 2
 
 
 def Tanh_backward(x, error):
     return tanh_derivate(x) * error
-
-
-if __name__ == '__main__':
-    data = np.random.randn(32,1)
-    pred = Softmax_forward(data)
-    print(pred)
